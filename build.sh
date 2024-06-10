@@ -70,7 +70,7 @@ KERVER=$(make kernelversion)
 COMMIT_HEAD=$(git log --oneline -1)
 
 # Date and Time
-DATE=$(TZ=Europe/Lisbon date +"%Y%m%d-%T")
+DATE=$(TZ=Asia/Kolkata date +"%Y%m%d-%T")
 TM=$(date +"%F%S")
 
 # Specify Final Zip Name
@@ -202,8 +202,8 @@ function exports() {
         export SUBARCH=arm64
                
         # KBUILD HOST and USER
-        export KBUILD_BUILD_HOST=ArchLinux
-        export KBUILD_BUILD_USER="NotZeeta"
+        export KBUILD_BUILD_HOST=CachyOS
+        export KBUILD_BUILD_USER="Quick"
         
         # CI
         if [ "$CI" ]
@@ -400,10 +400,10 @@ function zipping() {
     cd AnyKernel3 || exit 1
     zip -r9 ${FINAL_ZIP} *
     MD5CHECK=$(md5sum "$FINAL_ZIP" | cut -d' ' -f1)
-    UPLOAD_GOFILE=$(curl -F file=@$FINAL_ZIP https://store1.gofile.io/uploadFile)
-    DOWNLOAD_LINK_GOFILE=$(echo $UPLOAD_GOFILE | awk -F '"' '{print $10}')
-    push "$FINAL_ZIP" "Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s) | For <b>$MODEL ($DEVICE)</b> | <b>${KBUILD_COMPILER_STRING}</b> | <b>MD5 Checksum : </b><code>$MD5CHECK</code> | GOFILE Download link: $DOWNLOAD_LINK_GOFILE"
-	rm *.zip
+    #UPLOAD_GOFILE=$(curl -F file=@$FINAL_ZIP https://store1.gofile.io/uploadFile)
+    #DOWNLOAD_LINK_GOFILE=$(echo $UPLOAD_GOFILE | awk -F '"' '{print $10}')
+    #push "$FINAL_ZIP" "Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s) | For <b>$MODEL ($DEVICE)</b> | <b>${KBUILD_COMPILER_STRING}</b> | <b>MD5 Checksum : </b><code>$MD5CHECK</code> | GOFILE Download link: $DOWNLOAD_LINK_GOFILE"
+	#rm *.zip
     cd ..
 }
 
@@ -571,11 +571,11 @@ function zipping_aospa() {
     cd AnyKernel3 || exit 1
     zip -r9 ${FINAL_ZIP_AOSPA} *
     MD5CHECK=$(md5sum "$FINAL_ZIP_AOSPA" | cut -d' ' -f1)
-    UPLOAD_GOFILE=$(curl -F file=@$FINAL_ZIP_AOSPA https://store1.gofile.io/uploadFile)
-    DOWNLOAD_LINK_GOFILE=$(echo $UPLOAD_GOFILE | awk -F '"' '{print $10}')
-    push "$FINAL_ZIP_AOSPA" "Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s) | For <b>$MODEL ($DEVICE)</b> | <b>${KBUILD_COMPILER_STRING}</b> | <b>MD5 Checksum : </b><code>$MD5CHECK</code> | GOFILE Download link: $DOWNLOAD_LINK_GOFILE"
+    #UPLOAD_GOFILE=$(curl -F file=@$FINAL_ZIP_AOSPA https://store1.gofile.io/uploadFile)
+    #DOWNLOAD_LINK_GOFILE=$(echo $UPLOAD_GOFILE | awk -F '"' '{print $10}')
+    #push "$FINAL_ZIP_AOSPA" "Build took : $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s) | For <b>$MODEL ($DEVICE)</b> | <b>${KBUILD_COMPILER_STRING}</b> | <b>MD5 Checksum : </b><code>$MD5CHECK</code> | GOFILE Download link: $DOWNLOAD_LINK_GOFILE"
     cd ..
-    rm -rf AnyKernel3
+    #rm -rf AnyKernel3
 }
 
 cloneTC
@@ -585,32 +585,7 @@ END=$(date +"%s")
 DIFF=$(($END - $START))
 move
 # KernelSU
-echo "CONFIG_KSU=y" >> $(pwd)/arch/arm64/configs/$DEFCONFIG
-compile_ksu
-move_ksu
+# echo "CONFIG_KSU=y" >> $(pwd)/arch/arm64/configs/$DEFCONFIG
+# compile_ksu
+# move_ksu
 zipping
-if [ "$BUILD" = "local" ]; then
-# Discard KSU changes in defconfig
-git restore arch/arm64/configs/$DEFCONFIG
-fi
-if [ "${DEVICE}" = "alioth" ]; then
-	compile_aospa
-	END=$(date +"%s")
-	DIFF=$(($END - $START))
-	move_aospa
-	# KernelSU
-	echo "CONFIG_KSU=y" >> $(pwd)/arch/arm64/configs/$DEFCONFIG
-	compile_ksu_aospa
-	move_ksu_aospa
-	zipping_aospa
-elif [ "${DEVICE}" = "munch" ]; then
-	compile_aospa
-	END=$(date +"%s")
-	DIFF=$(($END - $START))
-	move_aospa
-	# KernelSU
-	echo "CONFIG_KSU=y" >> $(pwd)/arch/arm64/configs/$DEFCONFIG
-	compile_ksu_aospa
-	move_ksu_aospa
-	zipping_aospa
-fi
